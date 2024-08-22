@@ -1,0 +1,65 @@
+image:
+ # repository: 'https://471112776826.dkr.ecr.us-east-1.amazonaws.com/warehouse/redash-new-prod'
+  repository: 'docker-registry.dexguru.biz/dex.guru/redash/redash-new-prod'
+imageTag: ''
+imagePullSecrets:
+  - name: registry-harbor
+redash:
+#  123456
+  secretKey: MTIzNDU2IC1uCg==
+  cookieSecret: MTIzNDU2IC1uCg==
+  mailServer: "smtp.mailgun.org"
+  mailPort: "587"
+  mailUsername: "xxxxxxxxx"
+  mailPassword: "xxxxxxxxxxxx-xxxxxxxx"
+  mailDefaultSender: "sender@warehouse-demo.dex.guru"
+  host: "https://warehouse-demo.dex.guru"
+  alertsDefaultMailSubjectTemplate: "{state}) {alert_name}"
+  ailUseTls: "false"
+  mailUseSsl: "false"
+
+server:
+  resources:
+      limits:
+        cpu: 1000m
+        memory: 2Gi
+      requests:
+        cpu: 1000m
+        memory: 2Gi
+  env:
+    APM_ENABLED: 'false'
+    APM_RECORDING: "false"
+    SERVER_URL: 'https://warehouse-demo.dex.guru'
+    REDASH_JWT_LOGIN_ENABLED: 'true'
+    REDASH_JWT_AUTH_COOKIE_NAME: 'access_token_cookie'
+    REDASH_JWT_LOGIN_SECRET: 'jwt_secret'
+    REDASH_JWT_AUTH_HEADER_NAME: 'Authorization'
+    REDASH_RATELIMIT_ENABLED: "false"
+    THROTTLE_LOGIN_PATTERN: "5000/hour"
+    REDASH_WEB_WORKERS: 8
+postgresql:
+  enabled: true
+adhocWorker:
+  env:
+    QUEUES: "queries,celery,schemas,default,periodic"
+    WORKERS_COUNT: 12
+  resources:
+    limits:
+      cpu: 1000m
+      memory: 4Gi
+    requests:
+      cpu: 1000m
+      memory: 4Gi
+scheduledWorker:
+  env:
+    QUEUES: "scheduled_queries,schemas"
+    WORKERS_COUNT: 2
+redis:
+  enabled: true
+ingress:
+  annotations:
+    cert-manager.io/cluster-issuer: letsencrypt
+  enabled: true
+  hosts: [{"host":"warehouse-demo.dex.guru","paths":["/"]}]
+  tls: [{"hosts":["warehouse-demo.dex.guru"],"secretName":"warehouse-demo.dex.guru-tls"}]
+  pathType: ImplementationSpecific
